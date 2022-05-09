@@ -1,3 +1,23 @@
 <resources>
-    <string name="app_name">MobileDev Homework 20212</string>
+    <string name="app_name">Calculator</string>
+    <string name="ce_buttonText">CE</string>
+    <string name="c_buttonText">C</string>
+    <string name="bs_buttonText">BS</string>
+    <string name="division_buttonText">/</string>
+    <string name="number_7_buttonText">7</string>
+    <string name="number_8_buttonText">8</string>
+    <string name="number_9_buttonText">9</string>
+    <string name="multiplication_buttonText">x</string>
+    <string name="number_4_buttonText">4</string>
+    <string name="number_5_buttonText">5</string>
+    <string name="number_6_buttonText">6</string>
+    <string name="subtraction_buttonText">-</string>
+    <string name="number_1_buttonText">1</string>
+    <string name="number_3_buttonText">3</string>
+    <string name="addition_buttonText">+</string>
+    <string name="addOrSub_buttonText">+/-</string>
+    <string name="number_2_buttonText">2</string>
+    <string name="number_0_buttonText">0</string>
+    <string name="dot_buttonText">.</string>
+    <string name="equal_buttonText">=</string>
 </resources>
