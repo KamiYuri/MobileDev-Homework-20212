@@ -1,3 +1,15 @@
 <resources>
     <string name="app_name">MobileDev Homework 20212</string>
+    <string name="formTitle">Form</string>
+    <string name="nameHint">Họ tên (bắt buộc)</string>
+    <string name="mssvHint">MSSV (bắt buộc)</string>
+    <string name="phoneNumberHint">SĐT (bắt buộc)</string>
+    <string name="nativeLocalHint">Quê quán</string>
+    <string name="addressHint">Nơi ở hiện tại</string>
+    <string name="dateHint">Ngày tháng năm sinh</string>
+    <string name="cccdHint">Số CCCD (bắt buộc)</string>
+    <string name="emailHint">Email (bắt buộc)</string>
+    <string name="majorLabel">Ngành học</string>
+    <string name="majorKHMT">Khoa học máy tính</string>
+    <string name="marjorKTMT">Kỹ thuật máy tính</string>
 </resources>
