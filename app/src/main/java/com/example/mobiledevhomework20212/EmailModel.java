@@ -3,6 +3,13 @@ package com.example.mobiledevhomework20212;
 public class EmailModel {
     private String emailFrom, emailTime, emailTitle, emailContent;
 
+    public EmailModel(String emailFrom, String emailTime, String emailTitle, String emailContent) {
+        this.emailFrom = emailFrom;
+        this.emailTime = emailTime;
+        this.emailTitle = emailTitle;
+        this.emailContent = emailContent;
+    }
+
     public String getEmailFrom() {
         return emailFrom;
     }
