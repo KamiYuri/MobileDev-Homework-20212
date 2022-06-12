@@ -39,44 +39,47 @@
         android:paddingStart="20dp"
         android:paddingEnd="20dp">
 
-        <TextView
-            android:id="@+id/textView3"
+        <EditText
+            android:id="@+id/topInput"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:gravity="bottom"
-            android:text="$ 0"
-            android:textColor="@color/black"
+            android:ems="10"
+            android:inputType="number"
+            android:text="0"
+            android:textIsSelectable="false"
             android:textSize="48sp"
-            android:textStyle="bold"
-            tools:text="$ 0" />
+            tools:text="0" />
 
         <Spinner
-            android:id="@+id/upSpinner"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:contentDescription="Enter How Much Cookies You Want"
-            android:layout_weight="1" />
-
-        <TextView
-            android:id="@+id/textView4"
+            android:id="@+id/topSpinner"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:gravity="bottom"
-            android:text="đ 0"
-            android:textColor="@color/black"
+            android:contentDescription="Enter How Much Cookies You Want"
+            android:minHeight="48dp"
+            android:spinnerMode="dropdown" />
+
+        <EditText
+            android:id="@+id/bottomInput"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:ems="10"
+            android:inputType="number"
+            android:text="0"
             android:textSize="48sp" />
 
         <Spinner
-            android:id="@+id/downSpinner"
+            android:id="@+id/bottomSpinner"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:layout_weight="1"
             android:contentDescription="Enter How Much Cookies You Want"
-            android:layout_weight="1" />
+            android:minHeight="48dp" />
 
         <TextView
-            android:id="@+id/textView"
+            android:id="@+id/rate"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="1 USD  = 23,185.00 VND"
@@ -112,7 +115,7 @@
             app:cornerRadius="1dp" />
 
         <Button
-            android:id="@+id/buttonB"
+            android:id="@+id/buttonBs"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_row="0"
