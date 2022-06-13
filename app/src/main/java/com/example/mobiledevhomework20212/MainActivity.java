@@ -58,6 +58,9 @@ public class MainActivity extends AppCompatActivity{
 
         ArrayAdapter<String> adapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, currency);
 
+        topCurrency = "USD";
+        bottomCurrency = "USD";
+
         topSpinner = findViewById(R.id.topSpinner);
         bottomSpinner = findViewById(R.id.bottomSpinner);
 
@@ -71,7 +74,7 @@ public class MainActivity extends AppCompatActivity{
             @Override
             public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
                 topCurrency = topSpinner.getSelectedItem().toString();
-                bottomInput.setText(String.valueOf(convert(topCurrency, bottomCurrency, Double.parseDouble())));
+                bottomInput.setText(String.valueOf(convert(topCurrency, bottomCurrency, Double.parseDouble(topInput.getText().toString()))));
             }
 
             @Override
@@ -85,7 +88,8 @@ public class MainActivity extends AppCompatActivity{
         bottomSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
-
+                bottomCurrency = bottomSpinner.getSelectedItem().toString();
+                topInput.setText(String.valueOf(convert(bottomCurrency, topCurrency, Double.parseDouble(bottomInput.getText().toString()))));
             }
 
             @Override
@@ -163,11 +167,17 @@ public class MainActivity extends AppCompatActivity{
 
     @SuppressLint("SetTextI18n")
     private void handleSelectButton(Button clickedButton){
-        if(currentInput.getText().toString().equals("0")) { //Nếu chỉ có số 0
+        if(currentInput.getText().toString().equals("0.0") || currentInput.getText().toString().equals("0")) { //Nếu chỉ có số 0
             currentInput.setText(clickedButton.getText().toString());
         }
         else {
             currentInput.setText(currentInput.getText().toString() + clickedButton.getText().toString());
+        }
+
+        if (currentInput == topInput){
+            bottomInput.setText(String.valueOf(convert(topCurrency, bottomCurrency, Double.parseDouble(topInput.getText().toString()))));
+        } else {
+            topInput.setText(String.valueOf(convert(bottomCurrency, topCurrency, Double.parseDouble(bottomInput.getText().toString()))));
         }
     }
 }
