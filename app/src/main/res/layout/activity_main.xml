@@ -39,17 +39,14 @@
         android:paddingStart="20dp"
         android:paddingEnd="20dp">
 
-        <EditText
+        <TextView
             android:id="@+id/topInput"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:ems="10"
-            android:inputType="number"
             android:text="0"
-            android:textIsSelectable="false"
-            android:textSize="48sp"
-            tools:text="0" />
+            android:textColor="@color/black"
+            android:textSize="48sp" />
 
         <Spinner
             android:id="@+id/topSpinner"
@@ -60,14 +57,13 @@
             android:minHeight="48dp"
             android:spinnerMode="dropdown" />
 
-        <EditText
+        <TextView
             android:id="@+id/bottomInput"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:ems="10"
-            android:inputType="number"
             android:text="0"
+            android:textColor="@color/black"
             android:textSize="48sp" />
 
         <Spinner

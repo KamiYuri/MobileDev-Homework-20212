@@ -7,27 +7,46 @@ import android.os.Bundle;
 import android.text.Editable;
 import android.text.InputType;
 import android.text.TextWatcher;
+import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Spinner;
+import android.widget.TextView;
 
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 public class MainActivity extends AppCompatActivity{
-    private EditText topInput, bottomInput, currentInput;
+    private TextView topInput, bottomInput, currentInput;
     private Button number0Button, number1Button, number2Button,
             number3Button, number4Button, number5Button,
             number6Button, number7Button, number8Button,
             number9Button, ceButton, bsButton, dotButton;
 
-    String[] currency = {
-            "VND", "USD", "YEN"
-    };
+    Spinner topSpinner, bottomSpinner;
 
-    HashMap<String, Float> rateToUSD = new HashMap<>();
+    private static final List<String> currency;
+    public static Map<String, Double> rateList;
+
+    static {
+        currency = Arrays.asList("USD", "EUR", "JPY", "GBP", "AUD", "CAD", "CHF", "CNY", "SEK", "NZD");
+        rateList = new HashMap<>();
+        rateList.put("USD", 1D);
+        rateList.put("EUR", 1.17D);
+        rateList.put("JPY", 0.0095);
+        rateList.put("GBP", 1.29);
+        rateList.put("AUD", 0.71);
+        rateList.put("CAD", 0.76);
+        rateList.put("CHF", 1.09);
+        rateList.put("CNY", 0.15);
+        rateList.put("SEK", 0.11);
+        rateList.put("NZD", 0.66);
+    }
 
     String topCurrency, bottomCurrency;
 
@@ -37,16 +56,22 @@ public class MainActivity extends AppCompatActivity{
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        rateToUSD.put("VND", 23182F);
-        rateToUSD.put("YEN", 134.42F);
-
         ArrayAdapter<String> adapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, currency);
 
-        Spinner topSpinner = findViewById(R.id.topSpinner);
+        topSpinner = findViewById(R.id.topSpinner);
+        bottomSpinner = findViewById(R.id.bottomSpinner);
+
+        topInput = findViewById(R.id.topInput);
+        bottomInput = findViewById(R.id.bottomInput);
+        currentInput = topInput;
+
+        topSpinner.setAdapter(adapter);
+        topSpinner.setSelection(0);
         topSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
                 topCurrency = topSpinner.getSelectedItem().toString();
+                bottomInput.setText(String.valueOf(convert(topCurrency, bottomCurrency, Double.parseDouble())));
             }
 
             @Override
@@ -54,14 +79,13 @@ public class MainActivity extends AppCompatActivity{
 
             }
         });
-        topSpinner.setAdapter(adapter);
-        topSpinner.setSelection(0);
 
-        Spinner bottomSpinner = findViewById(R.id.bottomSpinner);
+        bottomSpinner.setAdapter(adapter);
+        bottomSpinner.setSelection(0);
         bottomSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
-                bottomCurrency = bottomSpinner.getSelectedItem().toString();
+
             }
 
             @Override
@@ -69,46 +93,12 @@ public class MainActivity extends AppCompatActivity{
 
             }
         });
-        bottomSpinner.setAdapter(adapter);
-        bottomSpinner.setSelection(0);
 
-        topInput = findViewById(R.id.topInput);
-        topInput.setOnTouchListener((view, motionEvent) -> {
-            int inType = topInput.getInputType(); // backup the input type
-            topInput.setInputType(InputType.TYPE_NULL); // disable soft input
-            topInput.onTouchEvent(motionEvent); // call native handler
+        topInput.setOnClickListener(view -> {
             currentInput = topInput;
-            topInput.setInputType(inType); // restore input type
-            return true; //
         });
-        topInput.addTextChangedListener(new TextWatcher() {
-            @Override
-            public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
-
-            }
-
-            @Override
-            public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
-
-            }
-
-            @Override
-            public void afterTextChanged(Editable editable) {
-                float toprate = rateToUSD.get(topSpinner.getSelectedItem().toString());
-                float botrate = rateToUSD.get(bottomSpinner.getSelectedItem().toString());
-
-                bottomInput.setText(String.valueOf(Float.parseFloat(topInput.getText().toString()) * toprate / botrate));
-            }
-        });
-
-        bottomInput = findViewById(R.id.bottomInput);
-        bottomInput.setOnTouchListener((view, motionEvent) -> {
-            int inType = bottomInput.getInputType(); // backup the input type
-            bottomInput.setInputType(InputType.TYPE_NULL); // disable soft input
-            bottomInput.onTouchEvent(motionEvent); // call native handler
+        bottomInput.setOnClickListener(view -> {
             currentInput = bottomInput;
-            bottomInput.setInputType(inType); // restore input type
-            return true;
         });
 
         initButton();
@@ -165,6 +155,10 @@ public class MainActivity extends AppCompatActivity{
         ceButton.setOnClickListener(view -> {
             currentInput.setText("0");
         });
+    }
+
+    public Double convert(String from, String to, Double value) {
+        return (rateList.get(from) / rateList.get(to)) * value;
     }
 
     @SuppressLint("SetTextI18n")
