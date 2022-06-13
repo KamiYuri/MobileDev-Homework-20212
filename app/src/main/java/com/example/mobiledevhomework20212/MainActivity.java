@@ -19,6 +19,7 @@ import android.widget.TextView;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 public class MainActivity extends AppCompatActivity{
@@ -74,7 +75,7 @@ public class MainActivity extends AppCompatActivity{
             @Override
             public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
                 topCurrency = topSpinner.getSelectedItem().toString();
-                bottomInput.setText(String.valueOf(convert(topCurrency, bottomCurrency, Double.parseDouble(topInput.getText().toString()))));
+                bottomInput.setText(String.format(Locale.ENGLISH, "%.2f", convert(topCurrency, bottomCurrency, Double.parseDouble(topInput.getText().toString()))));
             }
 
             @Override
@@ -89,7 +90,7 @@ public class MainActivity extends AppCompatActivity{
             @Override
             public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
                 bottomCurrency = bottomSpinner.getSelectedItem().toString();
-                topInput.setText(String.valueOf(convert(bottomCurrency, topCurrency, Double.parseDouble(bottomInput.getText().toString()))));
+                topInput.setText(String.format(Locale.ENGLISH, "%.2f", convert(bottomCurrency, topCurrency, Double.parseDouble(bottomInput.getText().toString()))));
             }
 
             @Override
@@ -167,17 +168,19 @@ public class MainActivity extends AppCompatActivity{
 
     @SuppressLint("SetTextI18n")
     private void handleSelectButton(Button clickedButton){
-        if(currentInput.getText().toString().equals("0.0") || currentInput.getText().toString().equals("0")) { //Nếu chỉ có số 0
-            currentInput.setText(clickedButton.getText().toString());
-        }
-        else {
-            currentInput.setText(currentInput.getText().toString() + clickedButton.getText().toString());
-        }
+        if(currentInput.getText().toString().length() <= 12) {
+            if(currentInput.getText().toString().equals("0.0") || currentInput.getText().toString().equals("0")) { //Nếu chỉ có số 0
+                currentInput.setText(clickedButton.getText().toString());
+            }
+            else {
+                currentInput.setText(currentInput.getText().toString() + clickedButton.getText().toString());
+            }
 
-        if (currentInput == topInput){
-            bottomInput.setText(String.valueOf(convert(topCurrency, bottomCurrency, Double.parseDouble(topInput.getText().toString()))));
-        } else {
-            topInput.setText(String.valueOf(convert(bottomCurrency, topCurrency, Double.parseDouble(bottomInput.getText().toString()))));
+            if (currentInput == topInput){
+                bottomInput.setText(String.format(Locale.ENGLISH, "%.2f", convert(topCurrency, bottomCurrency, Double.parseDouble(topInput.getText().toString()))));
+            } else {
+                topInput.setText(String.format(Locale.ENGLISH, "%.2f", convert(bottomCurrency, topCurrency, Double.parseDouble(bottomInput.getText().toString()))));
+            }
         }
     }
 }
