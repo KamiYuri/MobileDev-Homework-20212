@@ -1,9 +1,12 @@
 package com.example.mobiledevhomework20212;
 
-public class EmailModel {
-    private String emailFrom, emailTime, emailTitle, emailContent;
+import java.util.Date;
 
-    public EmailModel(String emailFrom, String emailTime, String emailTitle, String emailContent) {
+public class EmailModel {
+    private String emailFrom, emailTitle, emailContent;
+    private Date emailTime;
+
+    public EmailModel(String emailFrom, Date emailTime, String emailTitle, String emailContent) {
         this.emailFrom = emailFrom;
         this.emailTime = emailTime;
         this.emailTitle = emailTitle;
@@ -18,11 +21,11 @@ public class EmailModel {
         this.emailFrom = emailFrom;
     }
 
-    public String getEmailTime() {
+    public Date getEmailTime() {
         return emailTime;
     }
 
-    public void setEmailTime(String emailTime) {
+    public void setEmailTime(Date emailTime) {
         this.emailTime = emailTime;
     }
 
