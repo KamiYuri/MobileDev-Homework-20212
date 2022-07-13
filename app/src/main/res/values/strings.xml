@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">File Manager</string>
+    <string name="add_new_folder">Add new folder</string>
 </resources>
