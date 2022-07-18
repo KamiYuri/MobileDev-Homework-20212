@@ -1,7 +1,6 @@
 package com.example.mobiledevhomework20212;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
@@ -13,9 +12,9 @@ import androidx.recyclerview.widget.RecyclerView;
 import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.AlertDialog;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.graphics.Color;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -34,15 +33,19 @@ import android.widget.ImageView;
 import android.widget.PopupMenu;
 import android.widget.TextView;
 import android.widget.Toast;
-import android.widget.Toolbar;
+
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 public class MainActivity extends AppCompatActivity {
 
+    private static final int COPY = 1;
+    private static final int CUT = 2;
     public final String[] EXTERNAL_PERMS = {Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.READ_EXTERNAL_STORAGE};
 
     private static final int REQUEST_CODE = 123;
@@ -52,8 +55,12 @@ public class MainActivity extends AppCompatActivity {
     private RecyclerView recyclerView;
     private TextView dirPathTextView;
 
-    private ArrayList<FileModal> filesList;
+    private ArrayList<FileModal> filesList, selectedFilesList;
     private CustomAdapter adapter;
+    private int cutOrCopy = 0;
+    private Menu optionsMenu;
+    private FloatingActionButton pasteFab;
+    private ActionBar actionBar;
 
     @RequiresApi(api = Build.VERSION_CODES.N)
     @Override
@@ -63,8 +70,14 @@ public class MainActivity extends AppCompatActivity {
 
         requestPerms();
 
+        actionBar = getSupportActionBar();
+
+        pasteFab = findViewById(R.id.fab_paste);
+        pasteFab.setOnClickListener(v -> paste());
+
         //Initialize ArrayLists
         filesList = new ArrayList<>();
+        selectedFilesList = new ArrayList<>();
 
         dirPathTextView = findViewById(R.id.dirPathText);
         dirPath = Environment.getExternalStorageDirectory().getAbsolutePath();
@@ -86,17 +99,40 @@ public class MainActivity extends AppCompatActivity {
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.option_item_menu, menu);
+        optionsMenu = menu;
         return true;
     }
 
+    @SuppressLint("NonConstantResourceId")
     @RequiresApi(api = Build.VERSION_CODES.N)
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
-        if (item.getItemId() == R.id.addNewFolder){
-            addNewFolder();
-        }
+        switch (item.getItemId()){
+            case R.id.addNewFolder:
+                addNewFolder();
+                break;
+            case R.id.addNewText:
+                addNewText();
+                break;
+            case android.R.id.home:
+                backToParent();
+                break;
+            default:
 
+        }
         return super.onOptionsItemSelected(item);
+    }
+
+    @RequiresApi(api = Build.VERSION_CODES.N)
+    private void backToParent() {
+        try {
+            dirPath = (new File(dirPath + "/" + "..").getCanonicalPath());
+            refreshListFiles();
+            refreshAdapter();
+            setDirPath();
+        } catch (Exception e) {
+            Toast.makeText(getApplicationContext(), e.toString(), Toast.LENGTH_LONG).show();
+        }
     }
 
     private void setDirPath() {
@@ -112,9 +148,8 @@ public class MainActivity extends AppCompatActivity {
             //reset ArrayLists
             filesList.clear();
 
-            if(!dir.getAbsolutePath().equals(Environment.getExternalStorageDirectory().getAbsolutePath())){
-                filesList.add(new FileModal(new File("/..")));
-            }
+            actionBar.setDisplayHomeAsUpEnabled(!dir.getAbsolutePath().equals(Environment.getExternalStorageDirectory().getAbsolutePath()));
+
 
             assert files != null;
             for (File file : files) {
@@ -125,6 +160,15 @@ public class MainActivity extends AppCompatActivity {
             String error = e + "\n\nMessage: " + e.getMessage();
             Toast.makeText(getApplicationContext(), error, Toast.LENGTH_LONG).show();
         }
+    }
+
+    @RequiresApi(api = Build.VERSION_CODES.N)
+    void resetDir(){
+        dirPath  = Environment.getExternalStorageDirectory().getAbsolutePath();
+        refreshListFiles();
+        refreshAdapter();
+        setDirPath();
+        resetHighlight();
     }
 
     private void requestPerms() {
@@ -164,7 +208,7 @@ public class MainActivity extends AppCompatActivity {
 
             dirPath = (new File(dirPath + "/" + file.getName())).getCanonicalPath();
 
-            Log.v("fileOpen", dirPath);
+            Log.v("fileOpen", "dirPath: " + dirPath);
 
             File f = new File(dirPath);
             if (f.isDirectory()){
@@ -218,10 +262,9 @@ public class MainActivity extends AppCompatActivity {
         @Override
         public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position) {
             FileModal file = filesList.get(position);
+            file.setView(holder.itemView);
 
-            holder.itemView.setOnClickListener(v -> {
-                fileOpen(file);
-            });
+            holder.itemView.setOnClickListener(v -> fileOpen(file));
 
             ((ViewHolder)holder).fileIcon.setImageResource(file.getIconDrawable());
             ((ViewHolder)holder).fileName.setText(file.getName());
@@ -231,13 +274,7 @@ public class MainActivity extends AppCompatActivity {
                 popupMenu.setOnMenuItemClickListener(item -> {
                     switch (item.getItemId()){
                         case R.id.menu_item_select:
-                            select(file);
-                            return true;
-                        case R.id.menu_item_move:
-                            move(file);
-                            return true;
-                        case R.id.menu_item_copy:
-                            copy(file);
+                            select(file, holder.itemView);
                             return true;
                         case R.id.menu_item_rename:
                             rename(file);
@@ -278,40 +315,81 @@ public class MainActivity extends AppCompatActivity {
 
     @RequiresApi(api = Build.VERSION_CODES.N)
     private void addNewFolder() {
-        try{
-
+        try {
             //NewFolder Dialog Builder
             AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(this);
             LayoutInflater inflater = this.getLayoutInflater();
             final View dialogView = inflater.inflate(R.layout.modal, null);
             dialogBuilder.setView(dialogView);
 
-            final EditText txtNewFolder = dialogView.findViewById(R.id.modalText);
+            final EditText editTextNewFolderName = dialogView.findViewById(R.id.modalText);
 
             dialogBuilder.setTitle("New Folder");
             dialogBuilder.setMessage("Enter name of new folder");
             dialogBuilder.setPositiveButton("Done", (dialog, whichButton) -> {
-                String sNewFolderName = txtNewFolder.getText().toString();
-                File fNewFolder = new File(dirPath + "/" + sNewFolderName);
+                String newFolderName = editTextNewFolderName.getText().toString();
+                File newFolder = new File(dirPath + "/" + newFolderName);
                 // create
-                if (fNewFolder.exists()){
-                    Toast.makeText(this, "File is exist", Toast.LENGTH_LONG).show();
+                if (newFolder.exists()){
+                    Toast.makeText(this, "File is exist.", Toast.LENGTH_LONG).show();
                     return;
                 }
-                fNewFolder.mkdir();
-                //Refresh ListView
-                refreshListFiles();
-                refreshAdapter();
-            });
-            dialogBuilder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
-                public void onClick(DialogInterface dialog, int whichButton) {
-                    //pass
+                if (newFolder.mkdir()){
+                    //Refresh ListView
+                    refreshListFiles();
+                    refreshAdapter();
                 }
+                else Toast.makeText(this, "Can not create new folder.", Toast.LENGTH_LONG).show();
+            });
+            dialogBuilder.setNegativeButton("Cancel", (dialog, whichButton) -> {
+                //pass
             });
             AlertDialog b = dialogBuilder.create();
             b.show();
         }catch (Exception e){
             Toast.makeText(getApplicationContext(), e.toString(), Toast.LENGTH_LONG).show();
+        }
+    }
+
+    @RequiresApi(api = Build.VERSION_CODES.N)
+    public void addNewText() {
+        try {
+            //NewFolder Dialog Builder
+            AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(this);
+            LayoutInflater inflater = this.getLayoutInflater();
+            final View dialogView = inflater.inflate(R.layout.modal, null);
+            dialogBuilder.setView(dialogView);
+
+            final EditText editTextNewFolderName = dialogView.findViewById(R.id.modalText);
+
+            dialogBuilder.setTitle("New Text File");
+            dialogBuilder.setMessage("Enter name of new text file");
+            dialogBuilder.setPositiveButton("Done", (dialog, whichButton) -> {
+                String newTextFileName = editTextNewFolderName.getText().toString();
+                File newTextFile = new File(dirPath + "/" + newTextFileName + ".txt");
+                // create
+                if (newTextFile.exists()){
+                    Toast.makeText(this, "File is exist.", Toast.LENGTH_LONG).show();
+                    return;
+                }
+                try {
+                    if (newTextFile.createNewFile()){
+                        //Refresh ListView
+                        refreshListFiles();
+                        refreshAdapter();
+                    }
+                    else Toast.makeText(this, "Can not create new file.", Toast.LENGTH_LONG).show();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            });
+            dialogBuilder.setNegativeButton("Cancel", (dialog, whichButton) -> {
+                //pass
+            });
+            AlertDialog b = dialogBuilder.create();
+            b.show();
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 
@@ -330,18 +408,19 @@ public class MainActivity extends AppCompatActivity {
             dialogBuilder.setTitle("Rename Folder");
             dialogBuilder.setMessage("Enter new name of folder");
             dialogBuilder.setPositiveButton("Done", (dialog, whichButton) -> {
-                File f = file.getFile();
                 File fRename = new File(dirPath+ "/" + modalText.getText().toString());
-
-                if (fRename.exists()){
-                    Toast.makeText(this, "File is exist", Toast.LENGTH_LONG).show();
-                    return;
+                if (!fRename.equals(file.getFile())){
+                    if (fRename.exists()){
+                        Toast.makeText(this, "File is exist", Toast.LENGTH_LONG).show();
+                        return;
+                    }
                 }
-                f.renameTo(fRename);
-
-                //Refresh ListView
-                refreshListFiles();
-                refreshAdapter();
+                if (file.getFile().renameTo(fRename)){
+                    //Refresh ListView
+                    refreshListFiles();
+                    refreshAdapter();
+                }
+                else Toast.makeText(this, "Can not rename  folder.", Toast.LENGTH_LONG).show();
             });
             dialogBuilder.setNegativeButton("Cancel", (dialog, whichButton) -> {
                 //pass
@@ -353,19 +432,79 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    private void copy(FileModal file) {
+    @RequiresApi(api = Build.VERSION_CODES.N)
+    public void copy(MenuItem item) {
+        pasteFab.setVisibility(View.VISIBLE);
+        resetDir();
+        resetDir();
+        cutOrCopy = COPY;
     }
 
-    private void move(FileModal file) {
+    @RequiresApi(api = Build.VERSION_CODES.N)
+    public void cut(MenuItem item) {
+        pasteFab.setVisibility(View.VISIBLE);
+        cutOrCopy = CUT;
     }
 
-    private void select(FileModal file) {
+    private void resetHighlight() {
+        for (FileModal file : selectedFilesList){
+            View itemView = Objects.requireNonNull(recyclerView.findViewHolderForLayoutPosition(selectedFilesList.indexOf(file))).itemView;
+            itemView.setBackgroundColor(Color.WHITE);
+        }
+    }
+
+    private void select(FileModal file, View itemView) {
+        //if file is already selected, then deselect
+        if (selectedFilesList.contains(file)){
+            selectedFilesList.remove(file);
+            itemView.setBackgroundColor(Color.WHITE);
+        } else {
+            //select
+            selectedFilesList.add(file);
+            itemView.setBackgroundColor(Color.parseColor("#2FA4FF"));
+        }
+        optionsMenu.findItem(R.id.menu_item_copy).setVisible(!selectedFilesList.isEmpty());
+        optionsMenu.findItem(R.id.menu_item_move).setVisible(!selectedFilesList.isEmpty());
+    }
+
+    @RequiresApi(api = Build.VERSION_CODES.N)
+    public void paste(){
+        boolean success = true;
+        if (!selectedFilesList.isEmpty()) {
+            for (FileModal file : selectedFilesList){
+                try {
+                    if (cutOrCopy == CUT) {
+                        //move file to this location
+                        if(file.getFile().renameTo(new File(dirPath + "/" + file.getName()))){
+                            Log.v("TAG", "Move file successful.");
+                        }else{
+                            success = false;
+                            Log.v("TAG", "Move file failed.");
+                        }
+                    } else if (cutOrCopy == COPY) {
+                        //copy file to this location
+                    }
+                } catch (Exception e){
+                    e.printStackTrace();
+                }
+            }
+        }
+        if (success){
+            resetSelect();
+            refreshListFiles();
+            refreshAdapter();
+        }
+        pasteFab.setVisibility(View.GONE);
+    }
+
+    private void resetSelect() {
+        selectedFilesList.clear();
+        cutOrCopy = 0;
     }
 
     @RequiresApi(api = Build.VERSION_CODES.N)
     private void delete(FileModal file) {
         List<String> command = new ArrayList<>();
-
         try {
             command.add("/system/bin/rm");
             command.add("-rf");

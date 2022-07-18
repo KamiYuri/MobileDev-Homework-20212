@@ -1,13 +1,13 @@
 package com.example.mobiledevhomework20212;
 
 import android.os.Build;
-import android.util.Pair;
-import android.webkit.MimeTypeMap;
+import android.view.View;
 
 import androidx.annotation.RequiresApi;
 
 import java.io.File;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -23,10 +23,11 @@ public class FileModal {
         fileType.put("video", Arrays.asList("mp4", "rmvb", "avi", "flv", "3gp"));
         fileType.put("web", Arrays.asList("png", "jpg", "jpeg", "gif", "bmp"));
         fileType.put("zip", Arrays.asList("jar", "zip", "rar", "gz"));
-        fileType.put("text", Arrays.asList("txt"));
+        fileType.put("text", Collections.singletonList("txt"));
     }
 
     private File file;
+    private View view;
 
     public FileModal(File file){
         this.file = file;
@@ -85,5 +86,13 @@ public class FileModal {
                     return R.drawable.ic_baseline_file_24;
             }
         }
+    }
+
+    public void setView(View itemView) {
+        view = itemView;
+    }
+
+    public View getView(){
+        return view;
     }
 }

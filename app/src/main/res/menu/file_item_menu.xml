@@ -5,12 +5,6 @@
         android:id="@+id/menu_item_select"
         android:title="Select" />
     <item
-        android:id="@+id/menu_item_move"
-        android:title="Move to" />
-    <item
-        android:id="@+id/menu_item_copy"
-        android:title="Copy to" />
-    <item
         android:id="@+id/menu_item_rename"
         android:title="Rename" />
     <item

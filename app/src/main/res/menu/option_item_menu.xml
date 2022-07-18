@@ -8,4 +8,19 @@
         android:icon="@drawable/ic_baseline_create_new_folder_24"
         android:title="@string/add_new_folder"
         app:showAsAction="always" />
+    <item
+        android:id="@+id/addNewText"
+        android:icon="@drawable/ic_baseline_edit_note_24"
+        android:title="add_new_text"
+        app:showAsAction="always" />
+    <item
+        android:id="@+id/menu_item_move"
+        android:onClick="cut"
+        android:title="Move to"
+        android:visible="false" />
+    <item
+        android:id="@+id/menu_item_copy"
+        android:onClick="copy"
+        android:title="Copy to"
+        android:visible="false" />
 </menu>
