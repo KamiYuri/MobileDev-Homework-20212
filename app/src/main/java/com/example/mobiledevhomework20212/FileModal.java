@@ -1,6 +1,7 @@
 package com.example.mobiledevhomework20212;
 
 import android.os.Build;
+import android.text.BoringLayout;
 import android.view.View;
 
 import androidx.annotation.RequiresApi;
@@ -28,6 +29,7 @@ public class FileModal {
 
     private File file;
     private View view;
+    private Boolean selected;
 
     public FileModal(File file){
         this.file = file;
@@ -94,5 +96,13 @@ public class FileModal {
 
     public View getView(){
         return view;
+    }
+
+    public Boolean isSelected() {
+        return selected;
+    }
+
+    public void setSelected(Boolean selected) {
+        this.selected = selected;
     }
 }

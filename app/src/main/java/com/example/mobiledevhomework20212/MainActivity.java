@@ -262,9 +262,12 @@ public class MainActivity extends AppCompatActivity {
         @Override
         public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position) {
             FileModal file = filesList.get(position);
-            file.setView(holder.itemView);
 
             holder.itemView.setOnClickListener(v -> fileOpen(file));
+
+            if (file.isSelected()){
+                holder.itemView.setBackgroundColor(Color.WHITE);
+            }
 
             ((ViewHolder)holder).fileIcon.setImageResource(file.getIconDrawable());
             ((ViewHolder)holder).fileName.setText(file.getName());
@@ -274,7 +277,7 @@ public class MainActivity extends AppCompatActivity {
                 popupMenu.setOnMenuItemClickListener(item -> {
                     switch (item.getItemId()){
                         case R.id.menu_item_select:
-                            select(file, holder.itemView);
+                            select(file);
                             return true;
                         case R.id.menu_item_rename:
                             rename(file);
@@ -453,15 +456,15 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    private void select(FileModal file, View itemView) {
+    private void select(FileModal file) {
         //if file is already selected, then deselect
         if (selectedFilesList.contains(file)){
             selectedFilesList.remove(file);
-            itemView.setBackgroundColor(Color.WHITE);
+            file.setSelected(false);
         } else {
             //select
             selectedFilesList.add(file);
-            itemView.setBackgroundColor(Color.parseColor("#2FA4FF"));
+            file.setSelected(true);
         }
         optionsMenu.findItem(R.id.menu_item_copy).setVisible(!selectedFilesList.isEmpty());
         optionsMenu.findItem(R.id.menu_item_move).setVisible(!selectedFilesList.isEmpty());
