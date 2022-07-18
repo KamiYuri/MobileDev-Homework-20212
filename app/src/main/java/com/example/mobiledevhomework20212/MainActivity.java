@@ -19,6 +19,7 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
+
 import android.provider.Settings;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -36,7 +37,11 @@ import android.widget.Toast;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
+import org.apache.commons.io.FileUtils;
+
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -62,7 +67,7 @@ public class MainActivity extends AppCompatActivity {
     private FloatingActionButton pasteFab;
     private ActionBar actionBar;
 
-    @RequiresApi(api = Build.VERSION_CODES.N)
+    @RequiresApi(api = Build.VERSION_CODES.Q)
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -266,6 +271,8 @@ public class MainActivity extends AppCompatActivity {
             holder.itemView.setOnClickListener(v -> fileOpen(file));
 
             if (file.isSelected()){
+                holder.itemView.setBackgroundColor(Color.parseColor("#2FA4FF"));
+            } else {
                 holder.itemView.setBackgroundColor(Color.WHITE);
             }
 
@@ -439,13 +446,13 @@ public class MainActivity extends AppCompatActivity {
     public void copy(MenuItem item) {
         pasteFab.setVisibility(View.VISIBLE);
         resetDir();
-        resetDir();
         cutOrCopy = COPY;
     }
 
     @RequiresApi(api = Build.VERSION_CODES.N)
     public void cut(MenuItem item) {
         pasteFab.setVisibility(View.VISIBLE);
+        resetDir();
         cutOrCopy = CUT;
     }
 
@@ -468,35 +475,31 @@ public class MainActivity extends AppCompatActivity {
         }
         optionsMenu.findItem(R.id.menu_item_copy).setVisible(!selectedFilesList.isEmpty());
         optionsMenu.findItem(R.id.menu_item_move).setVisible(!selectedFilesList.isEmpty());
+
+        refreshAdapter();
+
     }
 
-    @RequiresApi(api = Build.VERSION_CODES.N)
+    @RequiresApi(api = Build.VERSION_CODES.Q)
     public void paste(){
-        boolean success = true;
         if (!selectedFilesList.isEmpty()) {
             for (FileModal file : selectedFilesList){
                 try {
-                    if (cutOrCopy == CUT) {
-                        //move file to this location
-                        if(file.getFile().renameTo(new File(dirPath + "/" + file.getName()))){
-                            Log.v("TAG", "Move file successful.");
-                        }else{
-                            success = false;
-                            Log.v("TAG", "Move file failed.");
-                        }
-                    } else if (cutOrCopy == COPY) {
-                        //copy file to this location
+                    if (cutOrCopy == COPY){
+                        FileUtils.copyToDirectory(file.getFile(), new File(dirPath));
+                    }
+                    else if (cutOrCopy == CUT) {
+                        FileUtils.moveToDirectory(file.getFile(), new File(dirPath), false);
                     }
                 } catch (Exception e){
+                    Toast.makeText(this, "Can not paste here.", Toast.LENGTH_LONG).show();
                     e.printStackTrace();
                 }
             }
         }
-        if (success){
-            resetSelect();
-            refreshListFiles();
-            refreshAdapter();
-        }
+        resetSelect();
+        refreshListFiles();
+        refreshAdapter();
         pasteFab.setVisibility(View.GONE);
     }
 
@@ -507,21 +510,12 @@ public class MainActivity extends AppCompatActivity {
 
     @RequiresApi(api = Build.VERSION_CODES.N)
     private void delete(FileModal file) {
-        List<String> command = new ArrayList<>();
         try {
-            command.add("/system/bin/rm");
-            command.add("-rf");
-            command.add(file.getAbsolutePath());
-
-            // start the subprocess
-            ProcessBuilder pb = new ProcessBuilder(command);
-            Process process = pb.start();
-            process.waitFor();
-
+            FileUtils.delete(file.getFile());
             //Refresh ListView
             refreshListFiles();
             refreshAdapter();
-        } catch (IOException | InterruptedException e) {
+        } catch (IOException e) {
             e.printStackTrace();
         }
     }

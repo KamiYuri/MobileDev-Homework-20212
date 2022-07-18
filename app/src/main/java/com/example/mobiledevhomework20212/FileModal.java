@@ -29,7 +29,7 @@ public class FileModal {
 
     private File file;
     private View view;
-    private Boolean selected;
+    private Boolean selected = false;
 
     public FileModal(File file){
         this.file = file;
